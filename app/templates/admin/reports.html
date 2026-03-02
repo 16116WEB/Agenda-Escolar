@@ -1,0 +1,146 @@
+﻿{% extends 'base.html' %}
+{% block title %}Relatórios | Agenda Escolar{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Dashboard analítico</h2>
+    <p class="muted">Visualização em gráfico para apresentação gerencial.</p>
+    <div class="chart-grid">
+        <article>
+            <h3>Uso de Salas</h3>
+            <canvas id="chartRooms" height="180"></canvas>
+        </article>
+        <article>
+            <h3>Uso de Equipamentos</h3>
+            <canvas id="chartEquipments" height="180"></canvas>
+        </article>
+        <article>
+            <h3>Reservas por Professor</h3>
+            <canvas id="chartTeachers" height="180"></canvas>
+        </article>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Uso de salas</h2>
+    <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='salas') }}">Exportar CSV</a>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Sala</th><th>Total de reservas</th></tr></thead>
+            <tbody>
+                {% for row in room_usage %}
+                    <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
+                {% else %}
+                    <tr><td colspan="2">Sem dados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Uso de equipamentos</h2>
+    <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='equipamentos') }}">Exportar CSV</a>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Equipamento</th><th>Total de reservas</th></tr></thead>
+            <tbody>
+                {% for row in equipment_usage %}
+                    <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
+                {% else %}
+                    <tr><td colspan="2">Sem dados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Uso por professor</h2>
+    <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='professores') }}">Exportar CSV</a>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Professor</th><th>Total de reservas</th></tr></thead>
+            <tbody>
+                {% for row in teacher_usage %}
+                    <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
+                {% else %}
+                    <tr><td colspan="2">Sem dados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Log de atividades</h2>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Detalhes</th><th>IP</th><th>Payload</th></tr></thead>
+            <tbody>
+                {% for log in logs %}
+                    <tr>
+                        <td>{{ log['created_at'] }}</td>
+                        <td>{{ log['user_nome'] or 'Sistema' }}</td>
+                        <td>{{ log['acao'] }}</td>
+                        <td>{{ log['detalhes'] }}</td>
+                        <td>{{ log['ip_origem'] or '-' }}</td>
+                        <td>
+                            {% if log['payload_before'] or log['payload_after'] %}
+                                <details>
+                                    <summary>Ver</summary>
+                                    <pre class="payload-box">ANTES: {{ log['payload_before'] or '-' }}&#10;DEPOIS: {{ log['payload_after'] or '-' }}</pre>
+                                </details>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6">Nenhuma atividade registrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-row">
+        <span>Página {{ logs_pagination.page }} de {{ logs_pagination.pages }} ({{ logs_pagination.total }} eventos)</span>
+        <div class="actions">
+            {% if logs_pagination.page > 1 %}
+                <a class="btn-secondary" href="{{ url_for('main.admin_reports', pagina=logs_pagination.page-1) }}">Anterior</a>
+            {% endif %}
+            {% if logs_pagination.page < logs_pagination.pages %}
+                <a class="btn-secondary" href="{{ url_for('main.admin_reports', pagina=logs_pagination.page+1) }}">Próxima</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function () {
+    function bar(canvasId, dataset, color) {
+        new Chart(document.getElementById(canvasId), {
+            type: "bar",
+            data: {
+                labels: dataset.map((x) => x.nome),
+                datasets: [{
+                    label: "Total",
+                    data: dataset.map((x) => x.total),
+                    backgroundColor: color,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    bar("chartRooms", {{ room_usage_json|tojson }}, "#0f766e");
+    bar("chartEquipments", {{ equipment_usage_json|tojson }}, "#0369a1");
+    bar("chartTeachers", {{ teacher_usage_json|tojson }}, "#92400e");
+})();
+</script>
+{% endblock %}

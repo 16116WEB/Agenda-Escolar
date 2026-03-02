@@ -1,0 +1,59 @@
+﻿{% extends 'base.html' %}
+{% block title %}Dashboard | Agenda Escolar{% endblock %}
+{% block content %}
+<section class="hero card">
+    <div>
+        <h2>Controle central da escola</h2>
+        <p>Visão rápida das reservas, recursos e operação diária em um painel único.</p>
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <article class="card stat">
+        <h3>Usuários</h3>
+        <p>{{ totals.users }}</p>
+    </article>
+    <article class="card stat">
+        <h3>Salas</h3>
+        <p>{{ totals.rooms }}</p>
+    </article>
+    <article class="card stat">
+        <h3>Equipamentos</h3>
+        <p>{{ totals.equipments }}</p>
+    </article>
+    <article class="card stat">
+        <h3>Reservas</h3>
+        <p>{{ totals.reservations }}</p>
+    </article>
+</section>
+
+<section class="card">
+    <h2>Próximas reservas</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Recurso</th>
+                    <th>Professor</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in next_reservations %}
+                    <tr>
+                        <td>{{ r['data'] }}</td>
+                        <td>{{ r['horario_inicio'] }} - {{ r['horario_fim'] }}</td>
+                        <td>{{ r['recurso_tipo'] }}: {{ r['recurso_nome'] or 'Removido' }}</td>
+                        <td>{{ r['professor_nome'] }}</td>
+                        <td>{{ r['observacao'] or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">Nenhuma reserva cadastrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

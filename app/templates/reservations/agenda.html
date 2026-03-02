@@ -1,0 +1,147 @@
+﻿{% extends 'base.html' %}
+{% block title %}Agenda | Agenda Escolar{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Calendário de reservas</h2>
+    <div class="calendar-head">
+        <a class="btn-secondary" href="{{ url_for('main.agenda', year=prev_year, month=prev_month, date=filter_date, room=filter_room, teacher=filter_teacher) }}">Mês anterior</a>
+        <strong>{{ '%02d'|format(month) }}/{{ year }}</strong>
+        <a class="btn-secondary" href="{{ url_for('main.agenda', year=next_year, month=next_month, date=filter_date, room=filter_room, teacher=filter_teacher) }}">Próximo mês</a>
+    </div>
+    <div class="table-wrap">
+        <table class="calendar">
+            <thead>
+                <tr>
+                    <th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th><th>Dom</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in month_calendar %}
+                    <tr>
+                        {% for d in week %}
+                            <td class="{{ '' if d.in_month else 'off-month' }}">
+                                <a href="{{ url_for('main.agenda', year=year, month=month, date=d.date, room=filter_room, teacher=filter_teacher) }}">
+                                    <span class="day">{{ d.day }}</span>
+                                    <small>{{ d.count }} reservas</small>
+                                </a>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Filtros</h2>
+    <form method="get" class="inline-form">
+        <input type="hidden" name="year" value="{{ year }}">
+        <input type="hidden" name="month" value="{{ month }}">
+
+        <label>Data
+            <input type="date" name="date" value="{{ filter_date }}">
+        </label>
+        <label>Sala
+            <select name="room">
+                <option value="">Todas</option>
+                {% for room in rooms %}
+                    <option value="{{ room['id'] }}" {{ 'selected' if filter_room == room['id']|string else '' }}>{{ room['nome'] }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Professor
+            <select name="teacher">
+                <option value="">Todos</option>
+                {% for t in teachers %}
+                    <option value="{{ t['id'] }}" {{ 'selected' if filter_teacher == t['id']|string else '' }}>{{ t['nome'] }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Filtrar</button>
+        <a class="btn-secondary" href="{{ url_for('main.agenda', year=year, month=month) }}">Limpar</a>
+        <a class="btn-secondary" href="{{ url_for('main.export_reservations_csv', date=filter_date, room=filter_room, teacher=filter_teacher) }}">Exportar CSV</a>
+        <a class="btn-secondary" href="{{ url_for('main.reservations_api', date=filter_date, room=filter_room, teacher=filter_teacher) }}" target="_blank">Abrir API JSON</a>
+        <a class="btn-secondary" href="{{ url_for('main.api_docs') }}" target="_blank">API Docs</a>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Lista detalhada de reservas</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Recurso</th>
+                    <th>Professor</th>
+                    <th>Observação</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reservations %}
+                    <tr>
+                        <td>{{ r['data'] }}</td>
+                        <td>{{ r['horario_inicio'] }} - {{ r['horario_fim'] }}</td>
+                        <td>{{ r['recurso_tipo'] }}: {{ r['recurso_nome'] or 'Removido' }}</td>
+                        <td>{{ r['professor_nome'] }}</td>
+                        <td>{{ r['observacao'] or '-' }}</td>
+                        <td>
+                            {% if g.user['tipo'] == 'admin' or r['usuario_id'] == g.user['id'] %}
+                                <a href="{{ url_for('main.edit_reservation', reservation_id=r['id']) }}">Editar</a>
+                                <form method="post" action="{{ url_for('main.cancel_reservation', reservation_id=r['id']) }}" class="inline" onsubmit="return confirm('Cancelar reserva?');">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="danger">Cancelar</button>
+                                </form>
+                            {% else %}
+                                <span class="muted">Somente leitura</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6">Nenhuma reserva encontrada com os filtros atuais.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Resumo em tempo real (API)</h2>
+    <p class="muted">Este bloco é consumido do endpoint JSON, útil para integração com app mobile ou painel externo.</p>
+    <div id="api-live" class="kpi-strip">
+        <article><h3>Total filtrado</h3><p id="api-total">--</p></article>
+        <article><h3>Próxima reserva</h3><p id="api-next">--</p></article>
+        <article><h3>Última atualização</h3><p id="api-time">--</p></article>
+    </div>
+</section>
+
+<script>
+(function () {
+    const target = new URL("{{ url_for('main.reservations_api') }}", window.location.origin);
+    const params = new URLSearchParams(window.location.search);
+    ["date", "room", "teacher"].forEach((k) => {
+        if (params.get(k)) target.searchParams.set(k, params.get(k));
+    });
+
+    fetch(target.toString())
+        .then((res) => res.json())
+        .then((data) => {
+            document.getElementById("api-total").textContent = data.total;
+            const next = data.items[0];
+            document.getElementById("api-next").textContent = next
+                ? `${next.data} ${next.horario_inicio} - ${next.recurso_nome}`
+                : "Sem reservas";
+            document.getElementById("api-time").textContent = new Date(data.generated_at).toLocaleString("pt-BR");
+        })
+        .catch(() => {
+            document.getElementById("api-total").textContent = "Erro";
+            document.getElementById("api-next").textContent = "Erro";
+            document.getElementById("api-time").textContent = "Erro";
+        });
+})();
+</script>
+{% endblock %}
+
+

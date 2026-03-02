@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Agenda Escolar{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="bg-orb orb-a"></div>
+    <div class="bg-orb orb-b"></div>
+    <div class="bg-grid"></div>
+
+    <header class="topbar">
+        <div class="container topbar-content">
+            <a class="brand" href="{{ url_for('main.dashboard') }}">
+                <strong>Agenda Escolar</strong>
+                <small>Gestão inteligente de recursos</small>
+            </a>
+
+            {% if g.user %}
+                <nav>
+                    <a class="{{ 'active' if request.endpoint == 'main.dashboard' else '' }}" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                    <a class="{{ 'active' if request.endpoint == 'main.agenda' else '' }}" href="{{ url_for('main.agenda') }}">Agenda</a>
+                    {% if g.user['tipo'] == 'professor' %}
+                        <a class="{{ 'active' if request.endpoint == 'main.create_reservation' else '' }}" href="{{ url_for('main.create_reservation') }}">Nova reserva</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.reservation_history' else '' }}" href="{{ url_for('main.reservation_history') }}">Meu histórico</a>
+                    {% endif %}
+                    {% if g.user['tipo'] == 'admin' %}
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_users' else '' }}" href="{{ url_for('main.admin_users') }}">Usuários</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_resources' else '' }}" href="{{ url_for('main.admin_resources') }}">Recursos</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_reservations' else '' }}" href="{{ url_for('main.admin_reservations') }}">Reservas</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_reports' else '' }}" href="{{ url_for('main.admin_reports') }}">Relatórios</a>
+                    {% endif %}
+                </nav>
+
+                <div class="user-menu">
+                    <span>{{ g.user['nome'] }} ({{ g.user['tipo'] }})</span>
+                    <a class="btn-secondary" href="{{ url_for('main.change_password') }}">Senha</a>
+                    <form action="{{ url_for('main.logout') }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit">Sair</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="container page-main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alerts">
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

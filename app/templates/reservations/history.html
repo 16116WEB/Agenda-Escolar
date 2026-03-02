@@ -1,0 +1,35 @@
+﻿{% extends 'base.html' %}
+{% block title %}Histórico | Agenda Escolar{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Meu histórico de reservas</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Recurso</th>
+                    <th>Observação</th>
+                    <th>Criada em</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reservations %}
+                    <tr>
+                        <td>{{ r['data'] }}</td>
+                        <td>{{ r['horario_inicio'] }} - {{ r['horario_fim'] }}</td>
+                        <td>{{ r['recurso_tipo'] }}: {{ r['recurso_nome'] or 'Removido' }}</td>
+                        <td>{{ r['observacao'] or '-' }}</td>
+                        <td>{{ r['data_criacao'] }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">Você ainda não fez reservas.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+

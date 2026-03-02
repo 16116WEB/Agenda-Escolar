@@ -1,0 +1,71 @@
+﻿{% extends 'base.html' %}
+{% block title %}Recursos | Agenda Escolar{% endblock %}
+{% block content %}
+<section class="card">
+    <h2>Cadastrar sala</h2>
+    <form method="post" class="grid-form two-cols">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="create_room">
+        <label>Nome
+            <input type="text" name="nome" required>
+        </label>
+        <label>Capacidade
+            <input type="number" name="capacidade" min="1" required>
+        </label>
+        <label class="full">Descrição
+            <textarea name="descricao" rows="2"></textarea>
+        </label>
+        <div class="full actions"><button type="submit">Cadastrar sala</button></div>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Cadastrar equipamento</h2>
+    <form method="post" class="grid-form two-cols">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="create_equipment">
+        <label>Nome
+            <input type="text" name="nome" required>
+        </label>
+        <label><input type="checkbox" name="disponivel" checked> Disponível</label>
+        <label class="full">Descrição
+            <textarea name="descricao" rows="2"></textarea>
+        </label>
+        <div class="full actions"><button type="submit">Cadastrar equipamento</button></div>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Salas cadastradas</h2>
+    {% for room in rooms %}
+        <form method="post" class="grid-form two-cols compact" action="{{ url_for('main.admin_edit_room', room_id=room['id']) }}">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>Nome<input type="text" name="nome" value="{{ room['nome'] }}" required></label>
+            <label>Capacidade<input type="number" name="capacidade" value="{{ room['capacidade'] }}" min="1" required></label>
+            <label class="full">Descrição<textarea name="descricao" rows="2">{{ room['descricao'] }}</textarea></label>
+            <div class="full actions">
+                <button type="submit">Salvar</button>
+                <button formaction="{{ url_for('main.admin_delete_room', room_id=room['id']) }}" formmethod="post" class="danger" onclick="return confirm('Remover sala e reservas relacionadas?');">Remover</button>
+            </div>
+        </form>
+    {% else %}
+        <p>Nenhuma sala cadastrada.</p>
+    {% endfor %}
+</section>
+
+<section class="card">
+    <h2>Equipamentos cadastrados</h2>
+    {% for eq in equipments %}
+        <form method="post" class="grid-form two-cols compact" action="{{ url_for('main.admin_edit_equipment', equipment_id=eq['id']) }}">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>Nome<input type="text" name="nome" value="{{ eq['nome'] }}" required></label>
+            <label><input type="checkbox" name="disponivel" {{ 'checked' if eq['disponivel'] else '' }}> Disponível</label>
+            <label class="full">Descrição<textarea name="descricao" rows="2">{{ eq['descricao'] }}</textarea></label>
+            <div class="full actions">
+                <button type="submit">Salvar</button>
+                <button formaction="{{ url_for('main.admin_delete_equipment', equipment_id=eq['id']) }}" formmethod="post" class="danger" onclick="return confirm('Remover equipamento e reservas relacionadas?');">Remover</button>
+            </div>
+        </form>
+    {% else %}
+        <p>Nenhum equipamento cadastrado.</p>
+    {% endfor %}
+</section>
+{% endblock %}
+
+
