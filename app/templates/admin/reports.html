@@ -1,102 +1,132 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Relatórios | Agenda Escolar{% endblock %}
 {% block content %}
+
 <section class="card">
-    <h2>Dashboard analítico</h2>
-    <p class="muted">Visualização em gráfico para apresentação gerencial.</p>
+    <h2>📊 Dashboard analítico</h2>
+    <p class="muted" style="margin:0 0 20px;">Visualização gráfica para apresentação gerencial.</p>
     <div class="chart-grid">
         <article>
             <h3>Uso de Salas</h3>
-            <canvas id="chartRooms" height="180"></canvas>
+            {% if room_usage %}
+                <canvas id="chartRooms" height="180"></canvas>
+            {% else %}
+                <div class="chart-empty"><span>📊</span>Sem dados ainda</div>
+            {% endif %}
         </article>
         <article>
             <h3>Uso de Equipamentos</h3>
-            <canvas id="chartEquipments" height="180"></canvas>
+            {% if equipment_usage %}
+                <canvas id="chartEquipments" height="180"></canvas>
+            {% else %}
+                <div class="chart-empty"><span>📊</span>Sem dados ainda</div>
+            {% endif %}
         </article>
         <article>
             <h3>Reservas por Professor</h3>
-            <canvas id="chartTeachers" height="180"></canvas>
+            {% if teacher_usage %}
+                <canvas id="chartTeachers" height="180"></canvas>
+            {% else %}
+                <div class="chart-empty"><span>📊</span>Sem dados ainda</div>
+            {% endif %}
         </article>
     </div>
 </section>
 
-<section class="card">
-    <h2>Uso de salas</h2>
-    <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='salas') }}">Exportar CSV</a>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Sala</th><th>Total de reservas</th></tr></thead>
-            <tbody>
-                {% for row in room_usage %}
-                    <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
-                {% else %}
-                    <tr><td colspan="2">Sem dados.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-bottom:20px;">
+    <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="margin:0;">🏫 Uso de salas</h2>
+            <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='salas') }}">⬇️ CSV</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Sala</th><th>Reservas</th></tr></thead>
+                <tbody>
+                    {% for row in room_usage %}
+                        <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="2" class="muted" style="text-align:center;padding:16px;">Sem dados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="margin:0;">🖥️ Uso de equipamentos</h2>
+            <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='equipamentos') }}">⬇️ CSV</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Equipamento</th><th>Reservas</th></tr></thead>
+                <tbody>
+                    {% for row in equipment_usage %}
+                        <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="2" class="muted" style="text-align:center;padding:16px;">Sem dados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="margin:0;">👥 Uso por professor</h2>
+            <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='professores') }}">⬇️ CSV</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Professor</th><th>Reservas</th></tr></thead>
+                <tbody>
+                    {% for row in teacher_usage %}
+                        <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="2" class="muted" style="text-align:center;padding:16px;">Sem dados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 
 <section class="card">
-    <h2>Uso de equipamentos</h2>
-    <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='equipamentos') }}">Exportar CSV</a>
+    <h2>📜 Log de atividades</h2>
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Equipamento</th><th>Total de reservas</th></tr></thead>
-            <tbody>
-                {% for row in equipment_usage %}
-                    <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
-                {% else %}
-                    <tr><td colspan="2">Sem dados.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="card">
-    <h2>Uso por professor</h2>
-    <a class="btn-secondary" href="{{ url_for('main.admin_export_reports', report_type='professores') }}">Exportar CSV</a>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Professor</th><th>Total de reservas</th></tr></thead>
-            <tbody>
-                {% for row in teacher_usage %}
-                    <tr><td>{{ row['nome'] }}</td><td>{{ row['total'] }}</td></tr>
-                {% else %}
-                    <tr><td colspan="2">Sem dados.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="card">
-    <h2>Log de atividades</h2>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Detalhes</th><th>IP</th><th>Payload</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Quando</th>
+                    <th>Usuário</th>
+                    <th>Ação</th>
+                    <th>Detalhes</th>
+                    <th>IP</th>
+                    <th>Payload</th>
+                </tr>
+            </thead>
             <tbody>
                 {% for log in logs %}
                     <tr>
-                        <td>{{ log['created_at'] }}</td>
+                        <td class="muted" style="font-size:0.8rem;">{{ log['created_at'] }}</td>
                         <td>{{ log['user_nome'] or 'Sistema' }}</td>
-                        <td>{{ log['acao'] }}</td>
-                        <td>{{ log['detalhes'] }}</td>
-                        <td>{{ log['ip_origem'] or '-' }}</td>
+                        <td><span class="role-badge role-admin" style="font-size:0.68rem;">{{ log['acao'] }}</span></td>
+                        <td class="muted">{{ log['detalhes'] }}</td>
+                        <td class="muted" style="font-size:0.8rem;">{{ log['ip_origem'] or '—' }}</td>
                         <td>
                             {% if log['payload_before'] or log['payload_after'] %}
                                 <details>
                                     <summary>Ver</summary>
-                                    <pre class="payload-box">ANTES: {{ log['payload_before'] or '-' }}&#10;DEPOIS: {{ log['payload_after'] or '-' }}</pre>
+                                    <pre class="payload-box">ANTES: {{ log['payload_before'] or '—' }}&#10;DEPOIS: {{ log['payload_after'] or '—' }}</pre>
                                 </details>
                             {% else %}
-                                -
+                                <span class="muted">—</span>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="6">Nenhuma atividade registrada.</td></tr>
+                    <tr><td colspan="6" class="muted" style="text-align:center;padding:24px;">Nenhuma atividade registrada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -106,10 +136,10 @@
         <span>Página {{ logs_pagination.page }} de {{ logs_pagination.pages }} ({{ logs_pagination.total }} eventos)</span>
         <div class="actions">
             {% if logs_pagination.page > 1 %}
-                <a class="btn-secondary" href="{{ url_for('main.admin_reports', pagina=logs_pagination.page-1) }}">Anterior</a>
+                <a class="btn-secondary" href="{{ url_for('main.admin_reports', pagina=logs_pagination.page-1) }}">‹ Anterior</a>
             {% endif %}
             {% if logs_pagination.page < logs_pagination.pages %}
-                <a class="btn-secondary" href="{{ url_for('main.admin_reports', pagina=logs_pagination.page+1) }}">Próxima</a>
+                <a class="btn-secondary" href="{{ url_for('main.admin_reports', pagina=logs_pagination.page+1) }}">Próxima ›</a>
             {% endif %}
         </div>
     </div>
@@ -118,7 +148,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function () {
+    const gridColor = 'rgba(45,63,85,0.6)';
+    const textColor = '#94a3b8';
     function bar(canvasId, dataset, color) {
+        if (!document.getElementById(canvasId)) return;
         new Chart(document.getElementById(canvasId), {
             type: "bar",
             data: {
@@ -133,14 +166,23 @@
             options: {
                 responsive: true,
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0, color: textColor },
+                        grid: { color: gridColor }
+                    },
+                    x: {
+                        ticks: { color: textColor },
+                        grid: { color: gridColor }
+                    }
+                }
             }
         });
     }
-
-    bar("chartRooms", {{ room_usage_json|tojson }}, "#0f766e");
-    bar("chartEquipments", {{ equipment_usage_json|tojson }}, "#0369a1");
-    bar("chartTeachers", {{ teacher_usage_json|tojson }}, "#92400e");
+    bar("chartRooms",      {{ room_usage_json|tojson }},      "#3b82f6");
+    bar("chartEquipments", {{ equipment_usage_json|tojson }}, "#6366f1");
+    bar("chartTeachers",   {{ teacher_usage_json|tojson }},   "#8b5cf6");
 })();
 </script>
 {% endblock %}

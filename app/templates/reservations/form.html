@@ -1,14 +1,15 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}{{ 'Editar' if reservation else 'Nova' }} reserva | Agenda Escolar{% endblock %}
 {% block content %}
-<section class="card">
-    <h2>{{ 'Editar reserva' if reservation else 'Nova reserva' }}</h2>
-    <form method="post" class="grid-form two-cols">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<section class="card" style="max-width:720px;margin:0 auto;">
+    <h2>{{ '✏️ Editar reserva' if reservation else '➕ Nova reserva' }}</h2>
+    <form method="post" class="grid-form two-cols">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Tipo de recurso
             <select name="resource_type" id="resource_type" required>
                 <option value="">Selecione</option>
-                <option value="sala" {{ 'selected' if reservation and reservation['recurso_tipo'] == 'sala' else '' }}>Sala</option>
-                <option value="equipamento" {{ 'selected' if reservation and reservation['recurso_tipo'] == 'equipamento' else '' }}>Equipamento</option>
+                <option value="sala"        {{ 'selected' if reservation and reservation['recurso_tipo'] == 'sala' else '' }}>🏫 Sala</option>
+                <option value="equipamento" {{ 'selected' if reservation and reservation['recurso_tipo'] == 'equipamento' else '' }}>🖥️ Equipamento</option>
             </select>
         </label>
 
@@ -36,13 +37,14 @@
         <label>Horário final
             <input type="time" name="end_time" required value="{{ reservation['horario_fim'] if reservation else '' }}">
         </label>
+
         <label class="full">Observação
-            <textarea name="observacao" rows="3" placeholder="Ex: trazer cabo HDMI">{{ reservation['observacao'] if reservation else '' }}</textarea>
+            <textarea name="observacao" rows="3" placeholder="Ex: Trazer cabo HDMI">{{ reservation['observacao'] if reservation else '' }}</textarea>
         </label>
 
         <div class="full actions">
-            <button type="submit">{{ 'Salvar alterações' if reservation else 'Criar reserva' }}</button>
-            <a class="btn-secondary" href="{{ url_for('main.agenda') }}">Voltar</a>
+            <button type="submit">{{ '✏️ Salvar alterações' if reservation else '✅ Criar reserva' }}</button>
+            <a class="btn-secondary" href="{{ url_for('main.agenda') }}">← Voltar</a>
         </div>
     </form>
 </section>
@@ -51,26 +53,16 @@
 (function () {
     const typeSelect = document.getElementById('resource_type');
     const resourceSelect = document.querySelector('select[name="resource_id"]');
-
     function filterResources() {
-        const selectedType = typeSelect.value;
-        const options = Array.from(resourceSelect.options);
-        options.forEach((option) => {
-            option.hidden = selectedType && option.dataset.type !== selectedType;
-        });
-
-        if (selectedType) {
-            const firstVisible = options.find((opt) => !opt.hidden);
-            if (firstVisible) {
-                firstVisible.selected = true;
-            }
+        const sel = typeSelect.value;
+        Array.from(resourceSelect.options).forEach((o) => { o.hidden = sel && o.dataset.type !== sel; });
+        if (sel) {
+            const first = Array.from(resourceSelect.options).find((o) => !o.hidden);
+            if (first) first.selected = true;
         }
     }
-
     typeSelect.addEventListener('change', filterResources);
     filterResources();
 })();
 </script>
 {% endblock %}
-
-

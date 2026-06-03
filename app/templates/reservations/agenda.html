@@ -1,12 +1,15 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Agenda | Agenda Escolar{% endblock %}
 {% block content %}
+
+{# today vem da view como string 'YYYY-MM-DD' ou fica vazio #}
+{% set today = today_str if today_str is defined else '' %}
+
 <section class="card">
-    <h2>Calendário de reservas</h2>
     <div class="calendar-head">
-        <a class="btn-secondary" href="{{ url_for('main.agenda', year=prev_year, month=prev_month, date=filter_date, room=filter_room, teacher=filter_teacher) }}">Mês anterior</a>
-        <strong>{{ '%02d'|format(month) }}/{{ year }}</strong>
-        <a class="btn-secondary" href="{{ url_for('main.agenda', year=next_year, month=next_month, date=filter_date, room=filter_room, teacher=filter_teacher) }}">Próximo mês</a>
+        <a class="btn-cal-nav" href="{{ url_for('main.agenda', year=prev_year, month=prev_month, date=filter_date, room=filter_room, teacher=filter_teacher) }}">‹</a>
+        <strong>{{ '%02d'|format(month) }} / {{ year }}</strong>
+        <a class="btn-cal-nav" href="{{ url_for('main.agenda', year=next_year, month=next_month, date=filter_date, room=filter_room, teacher=filter_teacher) }}">›</a>
     </div>
     <div class="table-wrap">
         <table class="calendar">
@@ -20,9 +23,11 @@
                     <tr>
                         {% for d in week %}
                             <td class="{{ '' if d.in_month else 'off-month' }}">
-                                <a href="{{ url_for('main.agenda', year=year, month=month, date=d.date, room=filter_room, teacher=filter_teacher) }}">
+                                <a class="calendar-cell {{ 'today' if d.date == today else '' }}" href="{{ url_for('main.agenda', year=year, month=month, date=d.date, room=filter_room, teacher=filter_teacher) }}">
                                     <span class="day">{{ d.day }}</span>
-                                    <small>{{ d.count }} reservas</small>
+                                    {% if d.count > 0 %}
+                                        <span class="cal-badge">{{ d.count }}</span>
+                                    {% endif %}
                                 </a>
                             </td>
                         {% endfor %}
@@ -38,7 +43,6 @@
     <form method="get" class="inline-form">
         <input type="hidden" name="year" value="{{ year }}">
         <input type="hidden" name="month" value="{{ month }}">
-
         <label>Data
             <input type="date" name="date" value="{{ filter_date }}">
         </label>
@@ -58,16 +62,18 @@
                 {% endfor %}
             </select>
         </label>
-        <button type="submit">Filtrar</button>
-        <a class="btn-secondary" href="{{ url_for('main.agenda', year=year, month=month) }}">Limpar</a>
-        <a class="btn-secondary" href="{{ url_for('main.export_reservations_csv', date=filter_date, room=filter_room, teacher=filter_teacher) }}">Exportar CSV</a>
-        <a class="btn-secondary" href="{{ url_for('main.reservations_api', date=filter_date, room=filter_room, teacher=filter_teacher) }}" target="_blank">Abrir API JSON</a>
-        <a class="btn-secondary" href="{{ url_for('main.api_docs') }}" target="_blank">API Docs</a>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+            <button type="submit">🔍 Filtrar</button>
+            <a class="btn-secondary" href="{{ url_for('main.agenda', year=year, month=month) }}">Limpar</a>
+            <a class="btn-secondary" href="{{ url_for('main.export_reservations_csv', date=filter_date, room=filter_room, teacher=filter_teacher) }}">⬇️ CSV</a>
+            <a class="btn-secondary" href="{{ url_for('main.reservations_api', date=filter_date, room=filter_room, teacher=filter_teacher) }}" target="_blank">{ } API</a>
+            <a class="btn-secondary" href="{{ url_for('main.api_docs') }}" target="_blank">📄 Docs</a>
+        </div>
     </form>
 </section>
 
 <section class="card">
-    <h2>Lista detalhada de reservas</h2>
+    <h2>Lista de reservas</h2>
     <div class="table-wrap">
         <table>
             <thead>
@@ -84,23 +90,29 @@
                 {% for r in reservations %}
                     <tr>
                         <td>{{ r['data'] }}</td>
-                        <td>{{ r['horario_inicio'] }} - {{ r['horario_fim'] }}</td>
-                        <td>{{ r['recurso_tipo'] }}: {{ r['recurso_nome'] or 'Removido' }}</td>
+                        <td>{{ r['horario_inicio'] }} – {{ r['horario_fim'] }}</td>
+                        <td>
+                            <span class="badge-{{ r['recurso_tipo'] }}">{{ r['recurso_tipo'] }}</span>
+                            {{ r['recurso_nome'] or 'Removido' }}
+                        </td>
                         <td>{{ r['professor_nome'] }}</td>
-                        <td>{{ r['observacao'] or '-' }}</td>
+                        <td class="muted">{{ r['observacao'] or '—' }}</td>
                         <td>
                             {% if g.user['tipo'] == 'admin' or r['usuario_id'] == g.user['id'] %}
-                                <a href="{{ url_for('main.edit_reservation', reservation_id=r['id']) }}">Editar</a>
-                                <form method="post" action="{{ url_for('main.cancel_reservation', reservation_id=r['id']) }}" class="inline" onsubmit="return confirm('Cancelar reserva?');">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                    <button type="submit" class="danger">Cancelar</button>
-                                </form>
+                                <div class="actions">
+                                    <a class="btn-icon" href="{{ url_for('main.edit_reservation', reservation_id=r['id']) }}" title="Editar">✏️</a>
+                                    <form method="post" action="{{ url_for('main.cancel_reservation', reservation_id=r['id']) }}" class="inline" onsubmit="return confirm('Cancelar reserva?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn-outline-danger" title="Cancelar">✕ Cancelar</button>
+                                    </form>
+                                </div>
                             {% else %}
                                 <span class="muted">Somente leitura</span>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="6">Nenhuma reserva encontrada com os filtros atuais.</td></tr>
+                    <tr><td colspan="6" class="muted" style="text-align:center;padding:24px;">Nenhuma reserva encontrada com os filtros atuais.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -108,12 +120,11 @@
 </section>
 
 <section class="card">
-    <h2>Resumo em tempo real (API)</h2>
-    <p class="muted">Este bloco é consumido do endpoint JSON, útil para integração com app mobile ou painel externo.</p>
+    <h2>Resumo em tempo real</h2>
     <div id="api-live" class="kpi-strip">
-        <article><h3>Total filtrado</h3><p id="api-total">--</p></article>
-        <article><h3>Próxima reserva</h3><p id="api-next">--</p></article>
-        <article><h3>Última atualização</h3><p id="api-time">--</p></article>
+        <article><h3>Total filtrado</h3><p id="api-total">—</p></article>
+        <article><h3>Próxima reserva</h3><p id="api-next" style="font-size:0.95rem;">—</p></article>
+        <article><h3>Última atualização</h3><p id="api-time" style="font-size:0.85rem;">—</p></article>
     </div>
 </section>
 
@@ -124,24 +135,19 @@
     ["date", "room", "teacher"].forEach((k) => {
         if (params.get(k)) target.searchParams.set(k, params.get(k));
     });
-
     fetch(target.toString())
-        .then((res) => res.json())
+        .then((r) => r.json())
         .then((data) => {
             document.getElementById("api-total").textContent = data.total;
             const next = data.items[0];
             document.getElementById("api-next").textContent = next
-                ? `${next.data} ${next.horario_inicio} - ${next.recurso_nome}`
+                ? `${next.data} ${next.horario_inicio} – ${next.recurso_nome}`
                 : "Sem reservas";
             document.getElementById("api-time").textContent = new Date(data.generated_at).toLocaleString("pt-BR");
         })
         .catch(() => {
-            document.getElementById("api-total").textContent = "Erro";
-            document.getElementById("api-next").textContent = "Erro";
-            document.getElementById("api-time").textContent = "Erro";
+            ["api-total","api-next","api-time"].forEach(id => document.getElementById(id).textContent = "Erro");
         });
 })();
 </script>
 {% endblock %}
-
-

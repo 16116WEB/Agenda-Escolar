@@ -1,8 +1,8 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Histórico | Agenda Escolar{% endblock %}
 {% block content %}
 <section class="card">
-    <h2>Meu histórico de reservas</h2>
+    <h2>📋 Meu histórico de reservas</h2>
     <div class="table-wrap">
         <table>
             <thead>
@@ -18,18 +18,19 @@
                 {% for r in reservations %}
                     <tr>
                         <td>{{ r['data'] }}</td>
-                        <td>{{ r['horario_inicio'] }} - {{ r['horario_fim'] }}</td>
-                        <td>{{ r['recurso_tipo'] }}: {{ r['recurso_nome'] or 'Removido' }}</td>
-                        <td>{{ r['observacao'] or '-' }}</td>
-                        <td>{{ r['data_criacao'] }}</td>
+                        <td>{{ r['horario_inicio'] }} – {{ r['horario_fim'] }}</td>
+                        <td>
+                            <span class="badge-{{ r['recurso_tipo'] }}">{{ r['recurso_tipo'] }}</span>
+                            {{ r['recurso_nome'] or 'Removido' }}
+                        </td>
+                        <td class="muted">{{ r['observacao'] or '—' }}</td>
+                        <td class="muted" style="font-size:0.8rem;">{{ r['data_criacao'] }}</td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="5">Você ainda não fez reservas.</td></tr>
+                    <tr><td colspan="5" class="muted" style="text-align:center;padding:24px;">Você ainda não fez reservas.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </section>
 {% endblock %}
-
-

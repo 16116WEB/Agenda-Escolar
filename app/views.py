@@ -528,6 +528,7 @@ def agenda():
         month_calendar=month_calendar,
         year=year,
         month=month,
+        today_str=date.today().isoformat(),
         prev_year=prev_year,
         prev_month=prev_month,
         next_year=next_year,

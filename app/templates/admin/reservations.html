@@ -1,13 +1,13 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Reservas (Admin) | Agenda Escolar{% endblock %}
 {% block content %}
 <section class="card">
-    <h2>Todas as reservas</h2>
+    <h2>📋 Todas as reservas</h2>
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>#</th>
                     <th>Data</th>
                     <th>Horário</th>
                     <th>Professor</th>
@@ -19,22 +19,27 @@
             <tbody>
                 {% for r in reservations %}
                     <tr>
-                        <td>#{{ r['id'] }}</td>
+                        <td class="muted">{{ r['id'] }}</td>
                         <td>{{ r['data'] }}</td>
-                        <td>{{ r['horario_inicio'] }} - {{ r['horario_fim'] }}</td>
+                        <td>{{ r['horario_inicio'] }} – {{ r['horario_fim'] }}</td>
                         <td>{{ r['professor_nome'] }}</td>
-                        <td>{{ r['recurso_tipo'] }}: {{ r['recurso_nome'] or 'Removido' }}</td>
-                        <td>{{ r['observacao'] or '-' }}</td>
                         <td>
-                            <a href="{{ url_for('main.edit_reservation', reservation_id=r['id']) }}">Editar</a>
-                            <form method="post" class="inline" action="{{ url_for('main.cancel_reservation', reservation_id=r['id']) }}" onsubmit="return confirm('Cancelar reserva?');">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="danger">Cancelar</button>
-                            </form>
+                            <span class="badge-{{ r['recurso_tipo'] }}">{{ r['recurso_tipo'] }}</span>
+                            {{ r['recurso_nome'] or 'Removido' }}
+                        </td>
+                        <td class="muted">{{ r['observacao'] or '—' }}</td>
+                        <td>
+                            <div class="actions">
+                                <a class="btn-icon" href="{{ url_for('main.edit_reservation', reservation_id=r['id']) }}" title="Editar">✏️</a>
+                                <form method="post" class="inline" action="{{ url_for('main.cancel_reservation', reservation_id=r['id']) }}" onsubmit="return confirm('Cancelar reserva?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn-outline-danger" title="Cancelar">✕</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="7">Nenhuma reserva cadastrada.</td></tr>
+                    <tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">Nenhuma reserva cadastrada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -44,10 +49,10 @@
         <span>Página {{ pagination.page }} de {{ pagination.pages }} ({{ pagination.total }} registros)</span>
         <div class="actions">
             {% if pagination.page > 1 %}
-                <a class="btn-secondary" href="{{ url_for('main.admin_reservations', pagina=pagination.page-1) }}">Anterior</a>
+                <a class="btn-secondary" href="{{ url_for('main.admin_reservations', pagina=pagination.page-1) }}">‹ Anterior</a>
             {% endif %}
             {% if pagination.page < pagination.pages %}
-                <a class="btn-secondary" href="{{ url_for('main.admin_reservations', pagina=pagination.page+1) }}">Próxima</a>
+                <a class="btn-secondary" href="{{ url_for('main.admin_reservations', pagina=pagination.page+1) }}">Próxima ›</a>
             {% endif %}
         </div>
     </div>

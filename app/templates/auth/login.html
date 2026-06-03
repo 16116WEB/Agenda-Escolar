@@ -1,20 +1,38 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Login | Agenda Escolar{% endblock %}
 {% block content %}
-<section class="card auth-card">
-    <h2>Entrar no sistema</h2>
-    <p>Use sua conta para acessar a agenda escolar.</p>
-    <form method="post" class="grid-form">        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label>Email
-            <input type="email" name="email" required>
-        </label>
-        <label>Senha
-            <input type="password" name="password" required>
-        </label>
-        <button type="submit">Entrar</button>
-    </form>
-    <small>Admin inicial: admin@escola.local / admin123</small>
-</section>
+<div class="login-page">
+    <div class="login-wrapper">
+        <div class="login-left">
+            <p class="brand-big">📚 Agenda Escolar</p>
+            <p class="tagline">Sistema profissional de gestão de salas e equipamentos para instituições de ensino.</p>
+            <ul class="feature-list">
+                <li><span>✅</span> Reserva de salas e equipamentos</li>
+                <li><span>📊</span> Relatórios e analytics</li>
+                <li><span>🔒</span> Controle de acesso por perfil</li>
+                <li><span>📅</span> Calendário visual integrado</li>
+            </ul>
+        </div>
+        <div class="login-right">
+            <h2>Bem-vindo de volta</h2>
+            <p>Entre com sua conta para continuar.</p>
+            <form method="post" class="grid-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label>Email
+                    <div class="input-icon-wrap">
+                        <span class="icon">✉️</span>
+                        <input type="email" name="email" required placeholder="seu@email.com">
+                    </div>
+                </label>
+                <label>Senha
+                    <div class="input-icon-wrap">
+                        <span class="icon">🔒</span>
+                        <input type="password" name="password" required placeholder="••••••••">
+                    </div>
+                </label>
+                <button type="submit" style="margin-top:4px;">Entrar →</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
-
-

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -14,33 +14,40 @@
     <header class="topbar">
         <div class="container topbar-content">
             <a class="brand" href="{{ url_for('main.dashboard') }}">
-                <strong>Agenda Escolar</strong>
+                <strong>📚 Agenda Escolar</strong>
                 <small>Gestão inteligente de recursos</small>
             </a>
 
             {% if g.user %}
                 <nav>
-                    <a class="{{ 'active' if request.endpoint == 'main.dashboard' else '' }}" href="{{ url_for('main.dashboard') }}">Dashboard</a>
-                    <a class="{{ 'active' if request.endpoint == 'main.agenda' else '' }}" href="{{ url_for('main.agenda') }}">Agenda</a>
+                    <a class="{{ 'active' if request.endpoint == 'main.dashboard' else '' }}" href="{{ url_for('main.dashboard') }}">🏠 Dashboard</a>
+                    <a class="{{ 'active' if request.endpoint == 'main.agenda' else '' }}" href="{{ url_for('main.agenda') }}">📅 Agenda</a>
                     {% if g.user['tipo'] == 'professor' %}
-                        <a class="{{ 'active' if request.endpoint == 'main.create_reservation' else '' }}" href="{{ url_for('main.create_reservation') }}">Nova reserva</a>
-                        <a class="{{ 'active' if request.endpoint == 'main.reservation_history' else '' }}" href="{{ url_for('main.reservation_history') }}">Meu histórico</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.create_reservation' else '' }}" href="{{ url_for('main.create_reservation') }}">➕ Nova reserva</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.reservation_history' else '' }}" href="{{ url_for('main.reservation_history') }}">📋 Meu histórico</a>
                     {% endif %}
                     {% if g.user['tipo'] == 'admin' %}
-                        <a class="{{ 'active' if request.endpoint == 'main.admin_users' else '' }}" href="{{ url_for('main.admin_users') }}">Usuários</a>
-                        <a class="{{ 'active' if request.endpoint == 'main.admin_resources' else '' }}" href="{{ url_for('main.admin_resources') }}">Recursos</a>
-                        <a class="{{ 'active' if request.endpoint == 'main.admin_reservations' else '' }}" href="{{ url_for('main.admin_reservations') }}">Reservas</a>
-                        <a class="{{ 'active' if request.endpoint == 'main.admin_reports' else '' }}" href="{{ url_for('main.admin_reports') }}">Relatórios</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_users' else '' }}" href="{{ url_for('main.admin_users') }}">👥 Usuários</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_resources' else '' }}" href="{{ url_for('main.admin_resources') }}">🏫 Recursos</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_reservations' else '' }}" href="{{ url_for('main.admin_reservations') }}">📋 Reservas</a>
+                        <a class="{{ 'active' if request.endpoint == 'main.admin_reports' else '' }}" href="{{ url_for('main.admin_reports') }}">📊 Relatórios</a>
                     {% endif %}
                 </nav>
 
                 <div class="user-menu">
-                    <span>{{ g.user['nome'] }} ({{ g.user['tipo'] }})</span>
-                    <a class="btn-secondary" href="{{ url_for('main.change_password') }}">Senha</a>
-                    <form action="{{ url_for('main.logout') }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit">Sair</button>
-                    </form>
+                    <button class="avatar-btn" type="button">
+                        <span class="avatar-circle">{{ g.user['nome'][0].upper() }}</span>
+                        <span>{{ g.user['nome'].split()[0] }}</span>
+                        <span class="avatar-chevron">▾</span>
+                    </button>
+                    <div class="avatar-dropdown">
+                        <a href="{{ url_for('main.change_password') }}">🔑 Alterar senha</a>
+                        <hr>
+                        <form action="{{ url_for('main.logout') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="logout-btn">🚪 Sair</button>
+                        </form>
+                    </div>
                 </div>
             {% endif %}
         </div>
@@ -51,7 +58,10 @@
             {% if messages %}
                 <div class="alerts">
                     {% for category, message in messages %}
-                        <div class="alert {{ category }}">{{ message }}</div>
+                        <div class="alert {{ category }}">
+                            {% if category == 'success' %}✅{% else %}⚠️{% endif %}
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 </div>
             {% endif %}
